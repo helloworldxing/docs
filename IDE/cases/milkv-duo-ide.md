@@ -8,19 +8,19 @@
    ```bash
    # 查看软件源的资源
    $ ruyi list --name-contains milkv --category-is toolchain
-   
+
    # 安装指定的工具链
    $ ruyi install gnu-milkv-milkv-duo-bin
-   
+
    # 从返回信息中可以查看安装的路径，如 ~/.local/share/ruyi/binaries/x86_64/gnu-milkv-milkv-duo-bin-0.20240731.0+git.67688c7335e7
-   
+
    ```
 3. 创建和使用Duo编译环境
 
    ```bash
    # 查看ruyi预配置环境
    $ ruyi list profiles
-   
+
    # 创建一个虚拟环境：工具链为gnu-milkv-milkv-duo-musl-bin
    $ ruyi venv -t gnu-milkv-milkv-duo-musl-bin milkv-duo ./venv-milkvduo
    ```
@@ -79,45 +79,45 @@
      # Eclipse 工具链设置
      #TOOLCHAIN_PREFIX := ~/milkv/duo/duo-examples/host-tools/gcc/riscv64-linux-musl-x86_64/bin/riscv64-unknown-linux-musl-
      TOOLCHAIN_PREFIX := ~/.local/share/ruyi/binaries/x86_64/gnu-milkv-milkv-duo-musl-bin-0.20240731.0+git.67688c7335e7/bin/riscv64-unknown-linux-musl-
-     
+
      # 编译选项-O3  
      #CFLAGS := -mcpu=c906fdv -march=rv64imafdcv0p7xthead -mcmodel=medany -mabi=lp64d -DNDEBUG -I/home/phebe/milkv/duo/duo-examples/include/system
      #LDFLAGS := -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -L/home/phebe/milkv/duo/duo-examples/libs/system/musl_riscv64
      CFLAGS := -mcpu=c906fdv -march=rv64imafdcv0p7xthead -g  #-mcpu=c906fdv -march=rv64imafdcv0p7xthead : One of the two must be set
      LDFLAGS := 
-     
+
      TARGET=helloworld
-     
+
      ifeq (,$(TOOLCHAIN_PREFIX))
      $(error TOOLCHAIN_PREFIX is not set)
      endif
-     
+
      ifeq (,$(CFLAGS))
      $(error CFLAGS is not set)
      endif
-     
+
      CC = $(TOOLCHAIN_PREFIX)gcc
-     
+
      SOURCE = $(wildcard *.c)
      OBJS = $(patsubst %.c,%.o,$(SOURCE))
-     
+
      # 默认目标
      all: $(TARGET)
-     
+
      $(TARGET): $(OBJS)
         $(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS)
-     
+
      %.o: %.c
         $(CC) $(CFLAGS) -o $@ -c $<
-     
+
      # 上传目标
      upload: $(TARGET)
         scp $(TARGET) root@192.168.42.1:/root/target/$(TARGET)
-     
+
      .PHONY: clean upload
      clean:
         rm -f *.o $(TARGET)
-     
+
      # 让 'all' 目标依赖于 'upload'，以便在构建后自动上传
      all: upload
      ```
@@ -279,11 +279,11 @@ all: upload
 2. 将上述下载的gdbserver拷贝到milkv duo设备的path路径下：
 
    ```bash
-   
+
    $ scp gdbserver root@192.168.42.1:/usr/bin/
-   
+
    $ ssh root@192.168.42.1 "chmod +x /usr/bin/gdbserver"
-   
+
    ```
 
 #### Terminal中调试
@@ -305,22 +305,22 @@ GDBServer + GDB命令远程调试的步骤如下：
 
    ```bash
    $ cd ~/ews-milkvduo-t01/sumdemo
-   
+
    # 查看gdb版本，启动调试
    # 这里使用 ruyi 虚拟环境进行调试，激活虚拟环境，在虚拟环境下编译
    $ source ~/venv-milkvduo/bin/ruyi-activate 
    $ riscv64-unknown-linux-musl-gdb --version
    $ riscv64-unknown-linux-musl-gdb ./sumdemo
-   
+
    $ target remote 192.168.42.1:2345   #端口号需要跟gdbserver端一致
-   
+
    $ break sumdemo.c:8                 #在第8行设置断点
-   
+
    # 下面几个可能常用，请按需灵活使用
    $ c                                 #contuinu，继续程序的运行,直到遇到下一个断点
    $ disp result                       #跟踪查看某个变量,每次停下来都显示它的值
    $ print result                      #打印内部变量result
-   
+
    ```
 
    ![1736326691511](image/1736326691511.png)
@@ -369,7 +369,7 @@ GDBServer + GDB命令远程调试的步骤如下：
 通过为 host 和 milkv duo 配置 ssh-key 免密登录，从而实现构建后自动将二进制文件连接并传输到milkv duo的指定路径下。
 
     1. 在 host上执行`ssh-keygen`
-    
+
     2. 将公钥添加到milkv duo上：
 
 ```bash
@@ -377,5 +377,5 @@ $ cat ~/.ssh/milkvduo.pub | ssh root@192.168.42.1 'mkdir -p ~/.ssh && cat >> ~/.
 ```
 
     3. 验证：`ssh root@192.168.42.1`
-    
+
     成功的情况下此时不需要再输入密码了。
